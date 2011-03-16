@@ -236,14 +236,18 @@ RestfulThings.Dispatcher.prototype = {
                 }
             }
             
-            res.send(JSON.stringify(o) + "\n");
+			// this is rather bizarre but you have specify a file extension
+			// and it determines the content type rather than just setting
+			// application/json
+			res.contentType(".json");
+            res.send(JSON.stringify(o));
         } 
         catch (e) {
             this.onError(req, res, e)
         }
     },
     onError: function(req, res, err){
-        res.send(err.message + "\n");
+        res.send(err.message,err.status);
     },
     buildLinks: function(spec, url, obj){
     

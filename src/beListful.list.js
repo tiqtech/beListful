@@ -27,7 +27,7 @@ list = new RestfulThings.Thing("list", {
             }
             else {
                 if (context.id === undefined) {
-                    db.view("lists/all", DBManager.onGet.bind(DBManager, context, false));
+                   db.view("lists/all", DBManager.onGet.bind(DBManager, context, false));
                 }
                 else {
                     db.get(context.id, DBManager.onGet.bind(DBManager, context, null));
@@ -35,6 +35,60 @@ list = new RestfulThings.Thing("list", {
             }
         });
     },
+	"put": function(context) {
+		console.log("> list.put");
+		
+		if (!context.body) {
+            context.onError(RestfulThings.Errors.ServerError("No object"));
+            return;
+        }
+		
+		if(context.spec.path === "items") {
+			//check if it's an array
+			
+			DBManager.getDatabase(function(db){
+				db.get(context.ancestors[0].id, function(err, res) {
+					if(err) {
+						context.onError(RestfulThings.Errors.ServerError(err));
+						return;
+					} else {
+	                    db.get(res.template, function(err, res){
+	                        if (err) {
+								context.onError(RestfulThings.Errors.ServerError(err));
+							} else {
+								var s = require("schema").create(res.schema);
+								for(var i=0;i<context.body.length;i++) {
+									var item = context.body[i];
+									var validation = s.validate(item);
+									
+									if(validation.errors.length > 0) {
+										context.onError(RestfulThings.Errors.ServerError("Invalid Item: " + JSON.stringify(item)));
+										return;
+									}
+								}
+								
+								// all items passed validation
+								for (var i = 0; i < context.body.length; i++) {
+									var item = context.body[i];
+									item.list = context.ancestors[0].id;
+									item.doctype = "item";
+									if (item.id) {
+										// need error handling
+										db.merge(item.id, item);
+									} else {
+										// need error handling
+										db.save(item);
+									}
+									
+									context.onComplete(DBManager.scrub(res));
+								}
+	                        }
+	                    });
+					}
+				});
+            });
+		}
+	},
     "post": function(context){
 		console.log("> list.post");
 		
@@ -57,9 +111,7 @@ list = new RestfulThings.Thing("list", {
 			});
         }
         else if (context.spec.path === "items") {
-            if (context.id === undefined) {
-				console.log(context.body);
-				
+            if (context.id === undefined) {				
                 DBManager.getDatabase(function(db){
 					db.get(context.ancestors[0].id, function(err, res) {
 						if(err) {
