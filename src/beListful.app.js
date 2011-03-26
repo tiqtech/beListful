@@ -27,21 +27,13 @@ AppManager = {
 		db.view("applications/all", DBManager.onGet.bind(DBManager, context, false));		
 	},
 	addTemplate:function(context, id, db) {
-        db.head(id, function(err, res, status) {
-            if (status === 200) {
-				context.onError(RestfulThings.Errors.ServerError("Resource exists"));
-			} else if (status === 404) {
-				db.save(context.body, function(err, res){
-					if (err) {
-						context.onError(RestfulThings.Errors.ServerError(err));
-					} else {
-						context.onComplete(DBManager.scrub(res));
-					}
-				})
-			} else {
+		db.save(context.body, function(err, res){
+			if (err) {
 				context.onError(RestfulThings.Errors.ServerError(err));
+			} else {
+				context.onComplete(DBManager.scrub(res));
 			}
-        });	
+		});
 	},
 	getTemplate:function(context, id, db) {
 		db.get(id, DBManager.onGet.bind(DBManager, context, null))
