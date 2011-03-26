@@ -62,7 +62,7 @@ list = new RestfulThings.Thing("list", {
 									var validation = s.validate(item);
 									
 									if(validation.errors.length > 0) {
-										context.onError(RestfulThings.Errors.ServerError("Invalid Item: " + JSON.stringify(item)));
+										context.onError(RestfulThings.Errors.ServerError("Invalid Item: " + JSON.stringify(item) + "\n" + JSON.stringify(validation.errors)));
 										return;
 									}
 								}
@@ -73,15 +73,19 @@ list = new RestfulThings.Thing("list", {
 									item.list = context.ancestors[0].id;
 									item.doctype = "item";
 									if (item.id) {
+										console.log("updating item", item.id)
 										// need error handling
-										db.merge(item.id, item);
-									} else {
-										// need error handling
-										db.save(item);
+										db.merge(item.id, item, function(err, res) {
+											if(err) {
+												console.log(err);
+											} else {
+												console.log("merge ok");
+											}
+										});
 									}
-									
-									context.onComplete(DBManager.scrub(res));
 								}
+								
+								context.onComplete(DBManager.scrub(res));
 	                        }
 	                    });
 					}

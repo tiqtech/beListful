@@ -122,13 +122,13 @@ RestfulThings.Dispatcher = function(){
     this.things = [];
     this.server = express.createServer(RestfulThings.Dispatcher.baseFilter.bind(this));
     this.server.use(express.bodyDecoder());
+	this.server.use(express.methodOverride());
     
     if (arguments.length > 0) {
         this.things = arguments;
     }
     
     for (var i = 0; i < this.things.length; i++) {
-        //console.log(this.things[i].spec);
         this.buildRoute(this.things[i], this.things[i].spec);
     }
 }
@@ -285,6 +285,25 @@ RestfulThings.Dispatcher.prototype = {
     }
 }
 
+RestfulThings.Dispatcher.methodMapper = function(req, res, next) {
+	console.log(">methodMapper");
+	
+	var url = require("url").parse(req.url, true);
+
+	switch (url.query._method) {
+		case 'put':
+			console.log("mapping to put");
+			req.method = 'put';
+			break;
+		case 'delete':
+			console.log("mapping to delete");
+			req.method = 'delete';
+			break;
+	}
+	
+	next();
+}
+
 RestfulThings.Dispatcher.baseFilter = function(req, res, next){
     // create rt context on request
     req.rt = {
@@ -316,6 +335,7 @@ RestfulThings.Dispatcher.contextFilter = function(req, res, next){
     req.rt.spec = this.spec;
 	
     if (req.body) {
+		console.log("i have a body")
         req.rt.body = req.body;
     }
     
