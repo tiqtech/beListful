@@ -77,7 +77,38 @@ app = new RestfulThings.Thing("app", {
 
 		DBManager.getDatabase(callback);
     },
-    "put": function(context){
+    "post": function(context){
+		// TODO: need to authorize user to add new app
+		
+		var schema = "application", handler = "add", doctype = "app";
+		
+		if(context.spec.path === "templates") {
+			schema = "template";
+			handler = "addTemplate";
+			doctype = "template"
+		}
+		
+		if(!context.body) {
+			context.onError(RestfulThings.Errors.ServerError("Empty request body received"));
+			return;
+		}
+		
+		var validation = schemas[schema].validate(context.body);
+		if(validation.errors.length > 0) {
+			context.onError(RestfulThings.Errors.ServerError("Invalid object"));
+			return;
+		}
+		
+		// convert to db format
+		if (context.body.id) {
+			context.body._id = context.body.id;
+			delete context.body.id;
+		}
+		context.body.doctype = doctype;
+		
+		DBManager.getDatabase(AppManager[handler].bind(AppManager, context, context.body._id));
+    },
+	"put": function(context){
 		// TODO: need to authorize user to add new app
 		
 		var schema = "application", handler = "add", doctype = "app";

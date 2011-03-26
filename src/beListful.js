@@ -1,5 +1,3 @@
-#!/usr/local/bin/node
- 
 var daemon = require('daemon');
 var fs = require('fs');
 var sys = require('sys');
@@ -35,7 +33,7 @@ require("./rt");
 });
 
 var dispatcher = new RestfulThings.Dispatcher(user, list, app);
-dispatcher.start(8080);
+dispatcher.start(80);
 
 /*
 - PUT a new dev user
@@ -59,10 +57,5 @@ Application
     - if string, then string must be valid email
     - if obj, must be a map of purposes to email
       (e.g. { "Marketing":"m@a.com", "Technical Support":"t@a.com" })
-
-
-
-
-
 
 */

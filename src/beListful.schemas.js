@@ -71,9 +71,6 @@ schemas = {
 	template: Schema.create({
 		type:'object',
 		properties:{
-			id:{
-				type:'string'
-			},
 			application:{
 				type:'string'
 			},
