@@ -1,0 +1,24 @@
+#! /bin/sh
+ 
+case "$1" in
+  start)
+    ../src/beListful.js start > /var/log/beListful.log 2> /var/log/beListful.err
+    ;;
+  stop)
+    ../src/beListful.js stop
+    ;;
+  restart)
+    ../src/beListful.js stop
+    ../src/beListful.js start > /var/log/beListful.log 2> /var/log/beListful.err
+    ;;
+ 
+  force-reload)
+    # No-op
+    ;;
+  *)
+    echo "Usage: beListful-httpd {start|stop|restart|force-reload}" >&2
+    exit 3
+    ;;
+esac
+ 
+:

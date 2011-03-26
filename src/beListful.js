@@ -1,3 +1,32 @@
+#!/usr/local/bin/node
+ 
+var daemon = require('daemon');
+var fs = require('fs');
+var sys = require('sys');
+ 
+var config = {
+    lockFile: '/var/run/beListful.pid'
+};
+ 
+var args = process.argv;
+var dPID;
+ 
+switch(args[2]) {
+    case "stop":
+        process.kill(parseInt(fs.readFileSync(config.lockFile)));
+        process.exit(0);
+        break;
+ 
+    case "start":
+        dPID = daemon.start();
+        daemon.lock(config.lockFile);
+        break;
+ 
+    default:
+        sys.puts('Usage: [start|stop]');
+        process.exit(0);
+}
+
 require("./rt");
 
 // pull in other required source files
