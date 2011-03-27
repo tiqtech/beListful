@@ -1,6 +1,8 @@
 #! /bin/sh
 
 BASEDIR=/var/beListful
+
+cd $BASEDIR
  
 case "$1" in
   start)

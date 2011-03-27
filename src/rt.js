@@ -121,7 +121,7 @@ RestfulThings.Dispatcher = function(){
     var express = require('express');
     this.things = [];
     this.server = express.createServer(RestfulThings.Dispatcher.baseFilter.bind(this));
-    this.server.use(express.bodyDecoder());
+    this.server.use(express.bodyParser());
 	this.server.use(express.methodOverride());
     
     if (arguments.length > 0) {

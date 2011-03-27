@@ -1,30 +1,6 @@
 var daemon = require('daemon');
 var fs = require('fs');
 var sys = require('sys');
- 
-var config = {
-    lockFile: '/var/run/beListful.pid'
-};
- 
-var args = process.argv;
-var dPID;
- 
-switch(args[2]) {
-    case "stop":
-        process.kill(parseInt(fs.readFileSync(config.lockFile)));
-        process.exit(0);
-        break;
- 
-    case "start":
-        dPID = daemon.start();
-        daemon.lock(config.lockFile);
-        break;
- 
-    default:
-        sys.puts('Usage: [start|stop]');
-        process.exit(0);
-}
-
 require("./rt");
 
 // pull in other required source files
@@ -32,8 +8,37 @@ require("./rt");
   require("./beListful." + x);
 });
 
-var dispatcher = new RestfulThings.Dispatcher(user, list, app);
-dispatcher.start(80);
+var config = {
+    lockFile: '/var/run/beListful.pid',
+	logFile: '/var/log/beListful.log'
+};
+ 
+var args = process.argv;
+var dPID;
+
+switch(args[2]) {
+    case "stop":
+        process.kill(parseInt(fs.readFileSync(config.lockFile)));
+        process.exit(0);
+        break;
+ 
+    case "start":
+		new RestfulThings.Dispatcher(user, list, app).start(80);
+		process.title = "beListful";
+	    daemon.daemonize(config.logFile, config.lockFile, function(err, started){
+	        if (err) {
+	            console.dir(err.stack);
+	            return sys.puts('Error starting daemon: ' + err);
+	        }
+			
+	        sys.puts('Successfully started daemon');
+	    });
+		break;
+ 
+    default:
+        sys.puts('Usage: [start|stop]');
+        process.exit(0);
+}
 
 /*
 - PUT a new dev user

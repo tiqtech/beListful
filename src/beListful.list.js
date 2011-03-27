@@ -108,6 +108,8 @@ list = new RestfulThings.Thing("list", {
 				return;
 			}
 			
+			context.body.doctype = "list";
+			
         	DBManager.getDatabase(function(db) {
 				db.save(context.body, function(err, res) {
 					context.onComplete(DBManager.scrub(res));
