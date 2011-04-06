@@ -23,16 +23,18 @@ switch(args[2]) {
         break;
  
     case "start":
-		new RestfulThings.Dispatcher(user, list, app).start(80);
+		new RestfulThings.Dispatcher(user, list, app).start(8080);
 		process.title = "beListful";
-	    daemon.daemonize(config.logFile, config.lockFile, function(err, started){
-	        if (err) {
-	            console.dir(err.stack);
-	            return sys.puts('Error starting daemon: ' + err);
-	        }
-			
-	        sys.puts('Successfully started daemon');
-	    });
+	    if(args[3] !== "no-daemon") {
+			daemon.daemonize(config.logFile, config.lockFile, function(err, started){
+		        if (err) {
+		            console.dir(err.stack);
+		            return sys.puts('Error starting daemon: ' + err);
+		        }
+				
+		        sys.puts('Successfully started daemon');
+		    });
+		}
 		break;
  
     default:

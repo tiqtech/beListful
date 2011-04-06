@@ -17,19 +17,17 @@ list = new RestfulThings.Thing("list", {
                 // either pass id of item (if provided) or range for list items
                 if (!!context.id) {
                     db.get(context.id, DBManager.onGet.bind(DBManager, context, true));
-                }
-                else {
+                } else {
                     db.view("lists/items", {
                         startkey: [context.ancestors[0].id, 1],
 						endkey: [context.ancestors[0].id, {}]
                     }, DBManager.onGet.bind(DBManager, context, false));
                 }
-            }
-            else {
+            } else {
                 if (context.id === undefined) {
-                   db.view("lists/all", DBManager.onGet.bind(DBManager, context, false));
-                }
-                else {
+					var owner = context.ancestors[0].id;
+					db.view("lists/byOwner", owner, DBManager.onGet.bind(DBManager, context, false));
+                } else {
                     db.get(context.id, DBManager.onGet.bind(DBManager, context, null));
                 }
             }
@@ -101,20 +99,31 @@ list = new RestfulThings.Thing("list", {
             return;
         }
         
-        if (!context.spec.path) {
-			var validation = schemas.list.validate(context.body);
-			if(validation.errors.length > 0) {
-				context.onError(RestfulThings.Errors.ServerError("invalid object"));
-				return;
-			}
-			
-			context.body.doctype = "list";
-			
-        	DBManager.getDatabase(function(db) {
-				db.save(context.body, function(err, res) {
-					context.onComplete(DBManager.scrub(res));
+        if (context.spec.path === "lists") {
+			try {
+				context.body.owner = context.ancestors[0].id;
+				context.body.doctype = "list";
+				
+				var validation = schemas.list.validate(context.body);
+				if (validation.errors.length > 0) {
+					context.onError(RestfulThings.Errors.ServerError("invalid object"));
+					return;
+				}
+				
+				DBManager.getDatabase(function(db){
+					db.get(context.body.template, function(err, res){
+						if(err) {
+							context.onError(RestfulThings.Errors.ServerError("Template '"+context.body.template+"' is not defined"));
+						} else {
+							db.save(context.body, function(err, res){						
+								context.redirect(res.id);
+							});							
+						}
+					});					
 				});
-			});
+			} catch(e) {
+				context.onError(RestfulThings.Errors.ServerError("Unknown error:" + e));
+			}
         }
         else if (context.spec.path === "items") {
             if (context.id === undefined) {				
@@ -153,7 +162,25 @@ list = new RestfulThings.Thing("list", {
     },
 	"del":function(context) {
 		var id = context.id;
-		if (context.spec.path === "items") {
+		if(context.spec.path === "lists" && id) {
+			DBManager.getDatabase(function(db) {
+				db.get(id, function(err,res) {
+					if(err) {
+						context.onError(RestfulThings.Errors.NotFound("List does not exist"));
+					} else {
+						rev = res._rev;
+						var o = DBManager.scrub(res);
+						db.remove(id, res, function(err, res) {
+							if(err) {
+								context.onError(RestfulThings.Errors.ServerError("Unable to delete list"));
+							} else {
+								context.onComplete(o);
+							}
+						});
+					}
+				})
+			});
+		} else if (context.spec.path === "items") {
 			if(!!id) {
 				// deleting one item
 				DBManager.getDatabase(function(db) {

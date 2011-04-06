@@ -1,24 +1,37 @@
 AppManager = {
     add: function(context, id, db){
-        db.head(id, function(err, res, status){
-            if (status === 200) {
-                context.onError(RestfulThings.Errors.ServerError("Resource exists"));
-            }
-            else 
-                if (status === 404) {
-                    db.save(context.body, function(err, res){
-                        if (err) {
-                            context.onError(RestfulThings.Errors.ServerError(err));
-                        }
-                        else {
-                            context.onComplete(DBManager.scrub(res));
-                        }
-                    })
-                }
-                else {
-                    context.onError(RestfulThings.Errors.ServerError(err));
-                }
-        });
+	
+		db.get(context.body.owner, function(err, res) {
+			if(err) {
+				context.onError(RestfulThings.Errors.ServerError("Application owner does not exist"));	
+			} else if(res.role.indexOf("developer") != -1 || res.role.indexOf("admin") != -1) {
+				db.head(id, function(err, res, status) {
+					if(status === 200) {
+						db.save(id, res.etag.slice(1,-1), context.body, function(err, user) {
+							if(err) {
+								context.onError(RestfulThings.Errors.ServerError(JSON.stringify(err)));
+							} else {
+								// redirect to self as GET
+								context.redirect();
+							}
+						})
+					} else if(status === 404) {
+						db.save(context.body, function(err, res) {
+							if(err) {
+								context.onError(RestfulThings.Errors.ServerError(JSON.stringify(err)));
+							} else {
+								// redirect to self as GET
+								context.redirect();
+							}
+						})
+					} else {
+						context.onError(RestfulThings.Errors.ServerError(err));
+					}
+				});
+			} else {
+				context.onError(RestfulThings.Errors.Unauthorized());
+			}
+		});			
     },
 	get:function(context, id, db) {
 		db.get(id, DBManager.onGet.bind(DBManager, context, null))
@@ -31,7 +44,7 @@ AppManager = {
 			if (err) {
 				context.onError(RestfulThings.Errors.ServerError(err));
 			} else {
-				context.onComplete(DBManager.scrub(res));
+				context.redirect(res.id);
 			}
 		});
 	},
@@ -97,7 +110,7 @@ app = new RestfulThings.Thing("app", {
 			delete context.body.id;
 		}
 		context.body.doctype = doctype;
-		
+				
 		DBManager.getDatabase(AppManager[handler].bind(AppManager, context, context.body._id));
     },
 	"put": function(context){

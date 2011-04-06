@@ -168,6 +168,10 @@ RestfulThings.Dispatcher.prototype = {
             if (!!newThing) {
                 // found it so override the current thing and spec with this one and continue
                 t = newThing;
+				
+				// TODO: should probably clone the spec so it can be imported multiple times
+				newThing.spec.parent = rs.parent;
+				newThing.spec.path = rs.path;
                 rs = newThing.spec;
             }
             else {
@@ -217,9 +221,9 @@ RestfulThings.Dispatcher.prototype = {
                 handler(req.rt);
             } 
             catch (e) {
-                this.onError(RestfulThings.Errors.ServerError(e));
+                req.rt.onError(RestfulThings.Errors.ServerError(e));
             }
-        }.bind(this);
+        };
     },
     onComplete: function(req, res, o){
         try {
@@ -247,8 +251,20 @@ RestfulThings.Dispatcher.prototype = {
         }
     },
     onError: function(req, res, err){
-        res.send(err.message,err.status);
+		if(err.message && err.status) {
+			res.send(err.message,err.status);			
+		} else {
+			res.send(err, 500);
+		}        
     },
+	redirect: function(req, res, id) {
+		var path =  require('url').parse(req.url).pathname;
+		if(id) {
+			path += "/" + id;
+		}
+		
+		res.redirect(path);
+	},
     buildLinks: function(spec, url, obj){
     
         // if spec specifies a remap, build a new self url and override spec to referenced thing
@@ -285,24 +301,6 @@ RestfulThings.Dispatcher.prototype = {
     }
 }
 
-RestfulThings.Dispatcher.methodMapper = function(req, res, next) {
-	console.log(">methodMapper");
-	
-	var url = require("url").parse(req.url, true);
-
-	switch (url.query._method) {
-		case 'put':
-			console.log("mapping to put");
-			req.method = 'put';
-			break;
-		case 'delete':
-			console.log("mapping to delete");
-			req.method = 'delete';
-			break;
-	}
-	
-	next();
-}
 
 RestfulThings.Dispatcher.baseFilter = function(req, res, next){
     // create rt context on request
@@ -335,13 +333,18 @@ RestfulThings.Dispatcher.contextFilter = function(req, res, next){
     req.rt.spec = this.spec;
 	
     if (req.body) {
-		console.log("i have a body")
+		// remove links before passing on to handler
+		if (req.body.links) {
+			delete req.body.links;
+		}
+		
         req.rt.body = req.body;
     }
     
     // bind callbacks
     req.rt.onComplete = this.dispatcher.onComplete.bind(this.dispatcher, req, res);
     req.rt.onError = this.dispatcher.onError.bind(this.dispatcher, req, res);
+	req.rt.redirect = this.dispatcher.redirect.bind(this.dispatcher, req, res);
     
     var p = this.spec.parent;
     var ancestors = [];
@@ -363,12 +366,12 @@ RestfulThings.Dispatcher.contextFilter = function(req, res, next){
 };
 
 RestfulThings.Dispatcher.authorizationFilter = function(req, res, next){
-    for (var i = 0; i < req.rt.ancestors.length; i++) {
-        var a = req.rt.ancestors[i];
-        if (a.spec.isSecured()) {
-            console.log("checking security for", a.spec.thing, "with id", a.id);
-        }
-    }
+//    for (var i = 0; i < req.rt.ancestors.length; i++) {
+//        var a = req.rt.ancestors[i];
+//        if (a.spec.isSecured()) {
+//
+//        }
+//    }
     
     next();
 };
@@ -385,7 +388,13 @@ RestfulThings.Errors = {
             status: 500,
             message: message || "Server Error"
         };
-    }
+    },
+	Unauthorized: function(message) {
+		return {
+			status:403,
+			message: message || "Unauthorized"
+		}
+	}
 };
 
 RestfulThings.Format = {

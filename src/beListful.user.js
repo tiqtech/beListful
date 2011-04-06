@@ -25,13 +25,21 @@ UserManager = {
 	add:function(context, id, db) {
 		db.head(id, function(err, res, status) {
 			if(status === 200) {
-				context.onError(RestfulThings.Errors.ServerError("Resource exists"));
+				db.save(id, res.etag.slice(1,-1), context.body, function(err, user) {
+					if(err) {
+						context.onError(RestfulThings.Errors.ServerError(JSON.stringify(err)));
+					} else {
+						// redirect to self as GET
+						context.redirect();
+					}
+				})
 			} else if(status === 404) {
 				db.save(context.body, function(err, res) {
 					if(err) {
-						context.onError(RestfulThings.Errors.ServerError(err));
+						context.onError(RestfulThings.Errors.ServerError(JSON.stringify(err)));
 					} else {
-						context.onComplete(DBManager.scrub(res));
+						// redirect to self as GET
+						context.redirect();
 					}
 				})
 			} else {

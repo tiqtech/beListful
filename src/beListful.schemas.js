@@ -65,6 +65,9 @@ schemas = {
 			},
 			description:{
 				type:'string'
+			},
+			owner:{
+				type:'string'
 			}
 		}
 	}),
