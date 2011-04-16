@@ -228,7 +228,7 @@ RestfulThings.Dispatcher.prototype = {
     onComplete: function(req, res, o){
         try {
             var url = require("url").parse(req.url, true);
-            
+			
             if (o instanceof Object) {
                 if (o.constructor === Array) {
                     for (var i = 0; i < o.length; i++) {
@@ -238,13 +238,15 @@ RestfulThings.Dispatcher.prototype = {
                 else {
                     o.links = req.rt.dispatcher.buildLinks(req.rt.spec, url.pathname, o);
                 }
-            }
-            
-			// this is rather bizarre but you have specify a file extension
-			// and it determines the content type rather than just setting
-			// application/json
-			res.contentType(".json");
-            res.send(JSON.stringify(o));
+				
+				// this is rather bizarre but you have specify a file extension
+				// and it determines the content type rather than just setting
+				// application/json
+				res.contentType(".json");
+	            res.send(JSON.stringify(o));
+            } else {
+				res.send();
+			}
         } 
         catch (e) {
             this.onError(req, res, e)

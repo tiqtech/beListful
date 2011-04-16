@@ -11,7 +11,9 @@ DBManager = {
   },
   onGet:function(context, oneResult, err, doc) {
     if(err) {
-      context.onError(RestfulThings.Errors.ServerError(err.reason));
+		var reason = (typeof(err) === "object") ? err.reason : err;
+      context.onError(RestfulThings.Errors.ServerError(reason));
+	  return;
     } else {
       try {
         if(!!doc.forEach) {

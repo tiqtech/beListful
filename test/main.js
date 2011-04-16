@@ -129,11 +129,28 @@ var tests = {
 			});
 		},
 		"Items": {
-			"Add Item to List":function(param, callback) {
-				beListful.post(param.list.links.items, param.objects["Item"], function(res, err) {
+			"Add Item 1 to List":function(param, callback) {
+				var item = param.objects["Item"];
+				beListful.post(param.list.links.items, item, function(res, err) {
 					assert.equal(err, undefined, "POST failed");
 					
-					callback()
+					callback({item1:res});
+				});
+			},
+			"Add Item 2 to List":function(param, callback) {
+				var item = param.objects["Item"];
+				beListful.post(param.list.links.items, item, function(res, err) {
+					assert.equal(err, undefined, "POST failed");
+					
+					callback({item2:res});
+				});
+			},
+			"Add Item 3 to List":function(param, callback) {
+				var item = param.objects["Item"];
+				beListful.post(param.list.links.items, item, function(res, err) {
+					assert.equal(err, undefined, "POST failed");
+					
+					callback({item3:res});
 				});
 			},
 			"Get Items for New List": function(param, callback){
@@ -142,6 +159,35 @@ var tests = {
 					callback();
 				});
 			}
+/*
+			"Update Items from New List": function(param, callback) {
+				beListful.get(param.list.links.items, function(res, err) {
+					assert.equal(err, undefined, "GET failed");
+					assert.notEqual(res.length, 0, "No items returned");
+					
+					for(var i=0;i<res.length;i++) {
+						res[i].title += i;
+					}
+					
+					var itemCount = res.length;
+					
+					beListful.put(param.list.links.items, res, function(updatedItems, putErr) {
+						assert.equal(putErr, undefined, "POST failed");
+						assert.notEqual(updatedItems.length, 0, "No items returned");
+						assert.equal(updatedItems.length, itemCount, "Lost items??");
+						
+						console.log(updatedItems,putErr);
+						
+						for(var i=0;i<updatedItems.length;i++) {
+							var index = parseInt(updatedItems[i].title.replace(/\D*(\d*)/, "$1"))
+							assert.equal(i, index, "Title not updated");
+						}
+						
+						callback();
+					})
+				})
+			}
+*/		
 		}
 	},
 	"Clean Up":{
@@ -150,6 +196,19 @@ var tests = {
 				assert.equal(err, undefined, "DELETE failed");
 				callback();
 			});
+		},
+		"Delete Item 1":function(param, callback) {
+			beListful.del(param.item1.links.self, function(res, err) {
+				assert.equal(err, undefined, "DELETE failed");
+				callback();
+			});
+		},
+		"Delete Remaining Items":function(param, callback) {
+			beListful.del(param.list.links.items, function(res, err) {
+				assert.equal(err, undefined, "DELETE failed");
+				
+				callback();
+			})
 		},
 		"Delete Test User":function(param, callback) {
 			beListful.del(param.user.links.self, function(res, err) {

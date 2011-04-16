@@ -44,8 +44,10 @@ beListful = {
 				responseBody += data;  
 			});
   
-			response.addListener("end", function() {  
-				if(response.statusCode >= 200 && response.statusCode < 300) {
+			response.addListener("end", function() {
+				if(response.statusCode == 204) {
+					onSuccess();
+				} else if(response.statusCode >= 200 && response.statusCode < 300) {
 					onSuccess((responseBody) ? JSON.parse(responseBody) : undefined);
 				} else if (response.statusCode >= 300 && response.statusCode < 305) {
 					var location = response.headers["location"];
