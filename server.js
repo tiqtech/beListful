@@ -25,7 +25,8 @@ simplate.addFromFile("register", "templates/register.html")
 	.addFromFile("header", "templates/header.html")
 	.addFromFile("footer", "templates/footer.html");
 
-var dispatcher = new RestfulThings.Dispatcher(user, list, app); 
+var dispatcher = new RestfulThings.Dispatcher(user, list, app);
+dispatcher.setStaticPath(__dirname + '/static');
 dispatcher.server.get("/fbauth", function(req, res) {
 	var appId = "APPID";
     var appSecret = "SECRET";
