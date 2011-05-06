@@ -61,7 +61,7 @@ dispatcher.server.get("/fbauth", function(req, res) {
 				},
 				user:user
 			}
-			res.send(simplate.render("registration", o));
+			res.send(simplate.render("register", o));
 		})
 	});
 });
