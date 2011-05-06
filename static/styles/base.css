@@ -1,0 +1,88 @@
+BODY {
+  padding:0px;
+  margin:0px;
+  font-size:10pt;
+  font-family:Helvetica;
+}
+
+.form-field {
+  margin:1em 0.5em 0.5em 0.5em;
+  clear:both;
+}
+
+.hint {
+  font-style:italic;
+  color:#888888;
+}
+
+.form-field LABEL {
+  display:block;
+  padding:2px;
+}
+
+P {
+  line-height:14pt;
+}
+
+INPUT {
+ display:block;
+  margin:6pt 0pt 6pt 0pt;
+}
+
+.form-field INPUT.left {
+  float:left;
+  width:7em;
+  margin-right:1em;
+}
+
+.header {
+  background:#427500;
+  border-bottom:3px solid #00cb29;
+  color:#ffffff;
+  padding:5px;
+}
+
+.header .content {
+  height:40px;
+  background:#427500 url(/images/beListful-letters-small.png) no-repeat;
+  padding-left:48px;
+}
+
+.header .page-title {
+  font:bold 12pt Helvetica;
+}
+
+.header .page-subtitle {
+  font:9pt Helvetica;
+}
+
+.body .content {
+  background:#e0ffe0 url(/images/beListful-letters-large.png) no-repeat right bottom;
+  padding:10px;
+}
+
+.footer {
+  background-color:#e0ffe0;
+  padding-top:10px
+}
+
+.footer .content {
+  padding:3px;
+  border-top:2px solid #00cb29;
+  background:#427500;
+  text-align:center;
+  font-size:8pt;
+  color:#ffffff;
+}
+
+.body .content .submit {
+  background:#427500;
+  border:1px solid #00cb29;
+  width:8em;
+  height:3em;
+  font-size:1em;
+  font-weight:bold;
+  margin-top:2em;
+  color:#ffffff;
+  clear:both;
+}

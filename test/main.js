@@ -125,8 +125,18 @@ var tests = {
 				}
 				
 				assert.equal(found != -1, true, "List not associated with user");
-				callback({list: res[found]});
+				callback();
 			});
+		},
+		"Rename List":function(param, callback) {
+			var l = param.list;
+			l.name = "Renamed List";
+			beListful.put(l.links.self, l, function(res, err) {
+				assert.equal(err, undefined, "PUT failed");
+				assert.equal(l.name, res.name, "Rename failed");
+				
+				callback();
+			})
 		},
 		"Items": {
 			"Add Item 1 to List":function(param, callback) {

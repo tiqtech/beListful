@@ -1,0 +1,38 @@
+<html>
+    <head>
+        ${template:header(page)}
+        <script src="/script/jquery.hint.js">
+        </script>
+        <script>
+            $(document).ready(function(){
+                $("input[title!='']").hint('hint');
+            });
+        </script>
+    </head>
+    <body>
+        <div class="header">
+            <div class="content">
+                <div class="page-title">
+                    Registration
+                </div>
+                <div class="page-subtitle">
+                    Sign up for a new account
+                </div>
+            </div>
+        </div>
+        <div class="body">
+            <div class="content">
+                <form action="" method="POST">
+                    <input title="First Name" name="firstName" value="${user.first_name}">
+					<input title="Last Name" name="lastName" value="${user.last_name}">
+					<input title="Email Address" name="email">
+					<input name="username" title="User Name" value="${user.username}">
+					<input name="password" type="password">
+					<input type="password" name="password2">
+					<input type="submit" value="Register" class="submit">
+                </form>
+            </div>
+        </div>
+        ${template:footer}
+    </body>
+</html>

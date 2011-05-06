@@ -1,4 +1,11 @@
 ListManager = {
+	handler:function(msg, errorCallback, successCallback, err, obj) {
+		if(err) {
+			errorCallback({message:msg,detail:err});
+		} else {
+			successCallback(obj);
+		}
+	},
 	schemaCache:{},
 	noop:function() {},
 	addList:function(owner, list, callback) {
@@ -17,39 +24,51 @@ ListManager = {
 		}
 		
 		DBManager.getDatabase(function(db){
-			db.get(list.template, function(err, res){
-				if(err) {
-					callback("Template is not defined");
-				} else {
-					db.save(list, function(err, res){
-						if(err) {
-							callback(err);
-						} else {
-							callback(undefined, res.id);
-						}
-					});							
-				}
-			});					
+			db.save(list, ListManager.handler.bind(ListManager, "Unable to add list", callback, function(list) { callback(undefined, list.id); }));
 		});
 	},
-	updateList:function(list, callback) {
-		DBManager.getDatabase(function(db) {
-			db.get(id, function(err,res) {
-				if(err) {
-					callback("List does not exist");
-				} else {
-					rev = res._rev;
-					var o = DBManager.scrub(res);
-					db.remove(id, res, function(err, res) {
-						if(err) {
-							callback("Unable to delete list");
-						} else {
-							callback(undefined, o);
-						}
-					});
-				}
-			})
+	updateList:function(list, revision, callback) {
+		callback = callback || ListManager.noop;
+		if(!revision) callback("Revision required");
+		if(!list) callback("List required");
+		if(typeof(list) !== "object") callback("List must be an object");
+		
+		list.doctype = "list";
+		
+		var validation = schemas.list.validate(list);
+		if (validation.errors.length > 0) {
+			callback("Invalid List object");
+			return;
+		}
+		
+		DBManager.getDatabase(function(db){
+			db.save(list.id, revision, list, ListManager.handler.bind(ListManager, "Unable to update list", callback, function(list) { callback(undefined, list.id); }));
 		});
+	},
+	saveList:function(owner, list, callback) {
+		callback = callback || ListManager.noop;
+		if(!owner) callback("Owner required");
+		if(!list) callback("List required");
+		if(typeof(list) !== "object") callback("List must be an object");
+		
+		if(!list.id) {
+			ListManager.addList(owner, list, callback);
+		} else {
+			DBManager.getDatabase(function(db){
+				db.get(list.id, function(err, res) {
+					// TODO: should probably check err here if i'm going to support generic saveList
+					if(err) {
+						ListManager.addList(owner, list, callback);
+					} else {
+						if(res.owner != owner) {
+							callback("Cannot change owner of existing list");
+						} else {
+							ListManager.updateList(list, res._rev, callback);
+						}
+					}
+				});			
+			});
+		}
 	},
 	deleteList:function(id, callback) {
 		callback = callback || ListManager.noop;
@@ -290,7 +309,7 @@ list = new RestfulThings.Thing("list", {
         }
 		
 		if (context.spec.path === "lists" && context.id) {
-			ListManager.updateList(context.id, function(err, res){
+			ListManager.saveList(context.ancestors[0].id, context.body, function(err, res){
 				if(err) {
 					context.onError(RestfulThings.Errors.ServerError(err));
 				} else {
@@ -363,8 +382,7 @@ list = new RestfulThings.Thing("list", {
 		method(context.ancestors[0].id, context.body, function(err, id){
 			if (err) {
 				context.onError(RestfulThings.Errors.ServerError(err));
-			}
-			else {
+			}	else {
 				context.redirect(id);
 			}
 		});

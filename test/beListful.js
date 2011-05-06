@@ -1,6 +1,8 @@
 beListful = {
 	Config: {
 		secure: false,
+//		host: "belistful.no.de",
+//		port: 8001
 		host: "10.0.2.2",
 		port: 9000
 //		host: "ec2-50-16-63-167.compute-1.amazonaws.com",

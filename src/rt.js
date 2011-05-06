@@ -254,7 +254,12 @@ RestfulThings.Dispatcher.prototype = {
     },
     onError: function(req, res, err){
 		if(err.message && err.status) {
-			res.send(err.message,err.status);			
+			var body = err.message;
+			if(err.detail) {
+				body += "\n" + JSON.stringify(err.detail);
+			}
+			
+			res.send(body,err.status);			
 		} else {
 			res.send(err, 500);
 		}        
@@ -385,10 +390,13 @@ RestfulThings.Errors = {
             message: message || "Not Found"
         };
     },
-    ServerError: function(message){
+    ServerError: function(err){
+		var message = err.message || err;
+		var detail = (err.detail) ? JSON.stringify(err.detail) : undefined;
         return {
             status: 500,
-            message: message || "Server Error"
+            message: message || "Server Error",
+			detail: detail
         };
     },
 	Unauthorized: function(message) {
