@@ -21,7 +21,7 @@ function getContent(options, callback) {
 	req.end();
 }
 
-simplate.addFromFile("register", "templates/regiser.html")
+simplate.addFromFile("register", "templates/register.html")
 	.addFromFile("header", "templates/header.html")
 	.addFromFile("footer", "templates/footer.html");
 
