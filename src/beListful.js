@@ -1,7 +1,7 @@
 var daemon = require('daemon');
 var fs = require('fs');
 var sys = require('sys');
-require("./rt");
+require("restful-things");
 
 // pull in other required source files
 ['schemas','db','user','list','app'].forEach(function(x) {

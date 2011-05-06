@@ -1,4 +1,4 @@
-require("./src/rt");
+require("restful-things");
 var simplate = require("simplate");
 
 // pull in other required source files
@@ -25,7 +25,7 @@ simplate.addFromFile("register", "templates/register.html")
 	.addFromFile("header", "templates/header.html")
 	.addFromFile("footer", "templates/footer.html");
 
-dispatcher.server.use(express.staticProvider(__dirname + '/static')); 
+var dispatcher = new RestfulThings.Dispatcher(user, list, app); 
 dispatcher.server.get("/fbauth", function(req, res) {
 	var appId = "APPID";
     var appSecret = "SECRET";
@@ -66,6 +66,5 @@ dispatcher.server.get("/fbauth", function(req, res) {
 	});
 });
 
-var dispatcher = new RestfulThings.Dispatcher(user, list, app);
 dispatcher.start(80);
 
